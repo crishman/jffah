@@ -4,7 +4,7 @@
 
 namespace sorts{
 
-	void balance_merge(std::string name, const int& N);
+	void balance_merge(const std::string& name, const int& N);
 }
 
 #endif

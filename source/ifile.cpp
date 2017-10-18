@@ -44,13 +44,13 @@ namespace sorts{
 
 	void ifile::write_to(ofile* out){
 		//if write in himself
-		if (name_ == out->name_){
+		if (name_ == out->name_){			
 			char c_temp;
 			if (file_.get(c_temp)){
 				//real eor of this ifile
 				bool temp_eor = true;
 				//one run in file
-				bool one_run = true;
+				//bool one_run = true;
 
 				char c_temp2;
 				if (file_.get(c_temp2)){
@@ -61,33 +61,17 @@ namespace sorts{
 						temp_eor = false;
 				}
 
-				//copy elements ifile[1]..ifile[N-1] to temp file, N = count of elements in ifile
-				ofile fo_temp("temp");
-				while (!f_eof()){
-					write_to(&fo_temp);
-					if (temp_eor && eor_ && !f_eof())
-						one_run = false;
-				}
+				int pos = get_pos();
+				close();
 
-				file_.close();
-
-				//copy elements ifile[0] to end of temp file
-				fo_temp.put(c_temp);
-				fo_temp.close();
-
-				//copy elements fo_temp[0]..fo_temp[N-1] to our file back, N = count of elements in fo_temp
-				ifile fi_temp("temp");
-				out->open_trunc();
-				while (!fi_temp.f_eof())
-					fi_temp.write_to(out);
+				out->open_app();
+				out->put(c_temp);
 				out->close();
-				fi_temp.close();
 
-				file_.open(name_);
-				eor_ = temp_eor;
-				//if ifile have one run and eor_ is true, then this sequence is ordered and set curent position in file_ at file_.end
-				if (eor_ && one_run)
-					file_.seekg(0, file_.end);
+				open();
+				set_pos(pos);
+
+				eor_ = temp_eor;				
 			}
 		}
 		else {

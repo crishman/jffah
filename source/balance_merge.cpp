@@ -6,12 +6,12 @@
 
 namespace sorts{
 
-	void balance_merge(std::string name, const int& N){
+	void balance_merge(const std::string& name, const int& N){
 		ifile R(name);
 		std::vector<ofile> w(N);
 		std::vector<ifile> r(N);
 		std::vector<std::string> g(N);
-		std::vector<int> t(N);//отображение индексов
+		std::vector<std::pair<int, int>> t(N);//отображение индексов
 
 		{
 			char c = 'a';
@@ -44,14 +44,16 @@ namespace sorts{
 
 			//установить указатели на источники
 			it_g = g.begin();
-			std::for_each(r.begin(), r.begin() + k1, [&it_g](ifile& f) { f.open(*it_g); ++it_g; });
+			std::for_each(r.begin(), r.begin() + k1, [&it_g](ifile& f) { f.open(*it_g); ++it_g; });			
 
 			//слить из r[0]...r[k1-1] в w[0]...w[K1-1]
 
 			int i = 0;
-			std::generate(t.begin(), t.begin() + k1, [&i](){return i++; });
+			std::generate(t.begin(), t.begin() + k1, [&i](){return std::make_pair(i++, 0); });
 
-			L = 0; j = 0;//j-индекс файла-приемника
+			std::for_each(t.begin(), t.begin() + k1, [&r](const std::pair<int, int>& t_pair){ r[t_pair.first].set_pos(t_pair.second); });
+
+			L = 0; j = 0;//j-индекс файла-приемника			
 
 			//слить по одной серии из каждого источника в w[j]
 			while (k1 != 0){//все источники исчерпаны
@@ -61,11 +63,11 @@ namespace sorts{
 				while (k2 > 0){
 					int m = 0;
 					char r_min;
-					r[t[0]].get(r_min);
+					r[t[0].first].get(r_min);
 					int i = 1;
 					while (i < k2){
 						char x;
-						r[t[i]].get(x);
+						r[t[i].first].get(x);
 						if (x < r_min){
 							r_min = x;
 							m = i;
@@ -74,27 +76,27 @@ namespace sorts{
 					}
 
 					int pos;
-					if (t[m] != j){
+					if (t[m].first != j){
 						pos = r[j].get_pos();
 						r[j].close();
 						w[j].open_app();
 					}
 
-					r[t[m]].write_to(&w[j]/*, t[m] == j*/);
+					r[t[m].first].write_to(&w[j]);
 
-					if (t[m] != j){
+					if (t[m].first != j){
 						w[j].close();
 						r[j].open();
 						r[j].set_pos(pos);
 					}
 
-					if (r[t[m]].f_eof()){//исключить последовательность
+					if (r[t[m].first].f_eof()){//исключить последовательность
 						//оичстим исключенную последовательность, но только если исключенная последовательность не равна той в которую писали на данной итерации
-						if (t[m] != j){
-							r[t[m]].close();
-							w[t[m]].open_trunc();
-							w[t[m]].close();
-							r[t[m]].open();
+						if (t[m].first != j){
+							r[t[m].first].close();
+							w[t[m].first].open_trunc();
+							w[t[m].first].close();
+							r[t[m].first].open();
 						}
 						//
 						--k1;
@@ -102,7 +104,7 @@ namespace sorts{
 						t[m] = t[k2];
 						t[k2] = t[k1];
 					}
-					else if (r[t[m]].f_eor()){//закрыть серию
+					else if (r[t[m].first].f_eor()){//закрыть серию
 						--k2;
 						std::swap(t[m], t[k2]);
 					}
