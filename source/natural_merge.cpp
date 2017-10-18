@@ -1,6 +1,8 @@
-#define _CRT_SECURE_NO_WARNINGS
+//#define _CRT_SECURE_NO_WARNINGS
 
-#include "file_struct.h"
+#include "natural_merge.h"
+#include "ifile.h"
+#include "ofile.h"
 
 namespace sorts {
 
@@ -16,7 +18,7 @@ namespace sorts {
 	//копирование серии
 	void copyrun(ifile* from, ofile* to) {
 		while (!from->f_eor())
-			from->write_to(to);		
+			from->write_to(to);
 	}
 
 	//слияние серии

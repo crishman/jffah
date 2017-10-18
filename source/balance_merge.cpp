@@ -1,6 +1,8 @@
+#include "balance_merge.h"
 #include <vector>
 #include <algorithm>
-#include "file_struct.h"
+#include "ifile.h"
+#include "ofile.h"
 
 namespace sorts{
 
@@ -11,7 +13,10 @@ namespace sorts{
 		std::vector<std::string> g(N);
 		std::vector<int> t(N);//отображение индексов
 
-		InitTitleList(g);
+		{
+			char c = 'a';
+			std::generate(g.begin(), g.end(), [&c](){ std::string s;  return s = (c++); });
+		}
 
 		//подключить обертки w к файлам g
 		std::vector <std::string>::iterator it_g = g.begin();
