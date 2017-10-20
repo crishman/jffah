@@ -14,13 +14,7 @@ namespace sorts {
 		static int L;
 	};
 	int L_series::L = 0;
-
-	//копирование серии
-	void copyrun(ifile* from, ofile* to) {
-		while (!from->f_eor())
-			from->write_to(to);
-	}
-
+	
 	//слияние серии
 	void mergerun(ofile* to, ifile* from1, ifile* from2) {
 		char from1_c, from2_c;
@@ -32,14 +26,14 @@ namespace sorts {
 			if (from1_c < from2_c) {
 				from1->write_to(to);
 				if (from1->f_eor()){
-					copyrun(from2, to);
+					from2->copyrun(to);
 					break;
 				}
 			}
 			else {
 				from2->write_to(to);
 				if (from2->f_eor()){
-					copyrun(from1, to);
+					from1->copyrun(to);
 					break;
 				}
 			}
@@ -54,12 +48,12 @@ namespace sorts {
 		}
 
 		while (!from1->f_eof()) {
-			copyrun(from1, to);
+			from1->copyrun(to);
 			L_series::incL();
 		}
 
 		while (!from2->f_eof()) {
-			copyrun(from2, to);
+			from2->copyrun(to);
 			L_series::incL();
 		}
 	}
@@ -67,9 +61,9 @@ namespace sorts {
 	//распределение
 	void f_distribute(ifile* from, ofile* to1, ofile* to2) {
 		while (!from->f_eof()) {
-			copyrun(from, to1);
+			from->copyrun(to1);
 			if (!from->f_eof())
-				copyrun(from, to2);
+				from->copyrun(to2);
 		}
 	}
 

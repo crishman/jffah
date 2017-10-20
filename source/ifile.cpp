@@ -47,10 +47,7 @@ namespace sorts{
 		if (name_ == out->name_){			
 			char c_temp;
 			if (file_.get(c_temp)){
-				//real eor of this ifile
 				bool temp_eor = true;
-				//one run in file
-				//bool one_run = true;
 
 				char c_temp2;
 				if (file_.get(c_temp2)){
@@ -69,9 +66,8 @@ namespace sorts{
 				out->close();
 
 				open();
-				set_pos(pos);
-
 				eor_ = temp_eor;				
+				set_pos(pos);								
 			}
 		}
 		else {
@@ -86,12 +82,38 @@ namespace sorts{
 				}
 				else
 					eor_ = true;
+				auto b = out->file_.is_open();
 				out->put(temp);
 			}
 			else
 				eor_ = true;
-
 		}
+	}
+
+	void ifile::copyrun(ofile* to) {
+		while (!f_eor())
+			write_to(to);
+	}
+
+	bool ifile::is_one_run(){
+		int cur_pos = get_pos();
+
+		while (!f_eof()){
+			char test_ch;
+			if (file_.get(test_ch)){
+				char test_next_ch;
+				if (file_.get(test_next_ch)){
+					file_.unget();
+					if (test_next_ch < test_ch){
+						set_pos(cur_pos);
+						return false;
+					}
+				}
+			}
+		}
+
+		set_pos(cur_pos);
+		return true;
 	}
 
 	int ifile::get_pos() {
@@ -99,17 +121,12 @@ namespace sorts{
 	}
 
 	void ifile::set_pos(const int& pos) {
-		file_.clear();
 		file_.seekg(pos);
+		file_.clear();
 	}
 
 	bool ifile::f_eof() {
-		char temp;
-		if (file_.get(temp)){
-			file_.unget();
-			return false;
-		}
-		return true;
+		return file_.eof();
 	}
 
 	bool ifile::f_eor() {

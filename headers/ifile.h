@@ -21,6 +21,10 @@ namespace sorts{
 
 		//write one element(char) from ifile::file_ to ofile::file_
 		void write_to(ofile* out);
+		//copy run from ifile::file_ to ofile::file_
+		void copyrun(ofile* to);
+		//check that file has one run from position at get_pos() to end
+		bool is_one_run();
 
 		//get cur pos from file_
 		int get_pos();
@@ -31,6 +35,8 @@ namespace sorts{
 		bool f_eof();
 		//end of run
 		bool f_eor();
+
+		friend struct ofile;
 
 	private:
 		std::string name_;
