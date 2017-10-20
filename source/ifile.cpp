@@ -82,7 +82,6 @@ namespace sorts{
 				}
 				else
 					eor_ = true;
-				auto b = out->file_.is_open();
 				out->put(temp);
 			}
 			else
@@ -138,5 +137,9 @@ namespace sorts{
 		}
 		else
 			return false;
+	}
+
+	bool ifile::is_open() const{
+		return file_.is_open();
 	}
 }

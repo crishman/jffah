@@ -36,6 +36,8 @@ namespace sorts{
 		//end of run
 		bool f_eor();
 
+		bool is_open() const;
+
 		friend struct ofile;
 
 	private:
