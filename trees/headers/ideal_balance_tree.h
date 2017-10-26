@@ -14,15 +14,14 @@ namespace trees{
 		//open from sequence from stream
 		ideal_balance_tree(const int& n, std::istream* in) :binary_tree() {
 			//build a ideal balanced tree with nodes		
-			std::function<std::unique_ptr<Node<T>>(const int&, std::istream*)> make_by_input = [&make_by_input](const int& n, std::istream* in){
-				std::unique_ptr<Node<T>> temp = nullptr;
+			std::function<node_ptr(const int&, std::istream*)> make_by_input = [&make_by_input](const int& n, std::istream* in){
+				node_ptr temp = nullptr;
 				if (n > 0) {
 					auto nl = n / 2;
 					auto nr = n - nl - 1;					
 					T ch;
 					(*in) >> ch;
-					temp = std::make_unique<Node<T>>(std::move(ch));
-					//temp->key_(ch);
+					temp = std::make_unique<node_t>(std::move(ch));
 					temp->left_ = make_by_input(nl, in);
 					temp->right_ = make_by_input(nr, in);
 				}

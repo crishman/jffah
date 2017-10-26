@@ -2,45 +2,24 @@
 #define BINARY_TREE_H
 #include <memory>
 #include <functional>
+#include "binary_node.h"
 
 namespace trees{
-	template <typename T>
+	template <typename T, template<class> class N = Node>
 	class binary_tree{
 	protected:
-		//binary tree node
-		template <typename T>
-		struct Node{
-			Node() :left_(nullptr), right_(nullptr) {}
-			explicit Node(T&& key) :left_(nullptr), right_(nullptr) {
-				key_ = std::make_shared<T>(std::forward<T>(key));
-			}
-			~Node() = default;
-
-			//if we copy node, only its contents are copied
-			Node(const Node& other) :left_(nullptr), right_(nullptr) {
-				key_ = std::make_shared<T>(*(other.key_));
-			}
-			//binary tree can not have two identical nodes
-			Node& operator=(const Node&) = delete;
-
-			Node(Node&& other) :key_(nullptr), left_(std::move(left_)), right_(std::move(right_)){
-				std::swap(key_, other.key_);
-			}
-			Node&& operator=(Node&&) = delete;
-
-			std::shared_ptr<T> key_;
-			std::unique_ptr<Node<T>> left_;
-			std::unique_ptr<Node<T>> right_;
-		};
-
+		using node_t = N<T>;
+		using node_ptr = std::unique_ptr<node_t>;
 	public:
+		//default constructor
 		binary_tree() :head_(nullptr) {}
 		virtual ~binary_tree() = default;
 
+		//copy construct
 		binary_tree(const binary_tree& other){
-			std::function<void(std::unique_ptr<Node<T>>&, const std::unique_ptr<Node<T>>&)> recursive_create = [&recursive_create](std::unique_ptr<Node<T>>& head, const std::unique_ptr<Node<T>>& other_head){
+			std::function<void(node_ptr&, const node_ptr&)> recursive_create = [&recursive_create](node_ptr& head, const node_ptr& other_head){
 				if (other_head != nullptr){
-					head = std::make_unique<Node<T>>(*other_head);
+					head = std::make_unique<node_t>(std::forward<T>(*(other_head->key_)));
 					if (other_head->left_ != nullptr)
 						recursive_create(head->left_, other_head->left_);
 					if (other_head->right_ != nullptr)
@@ -50,14 +29,24 @@ namespace trees{
 
 			recursive_create(head_, other.head_);
 		}
-		binary_tree& operator=(const binary_tree&) = delete;
+		binary_tree& operator=(const binary_tree&){
+			binary_tree temp(other);
+			std::swap(head_, temp.head_);
+			return this;
+		}
 
+		//move constructor
 		binary_tree(binary_tree&& other) :head_(std::move(other.head_)) {}
-		binary_tree&& operator=(binary_tree&&) = delete;
+		binary_tree&& operator=(binary_tree&& other) {
+			binary_tree temp(std::move(other));
+			std::swap(head_, temp.head_);
+			return std::move(this);
+		}
 
 	protected:
 		//tree traversal
-		void preorder(std::unique_ptr<Node<T>>& t, const std::function<void(std::unique_ptr<Node<T>>&)>& P){
+		using order_pred = std::function<void(node_ptr&)>;
+		void preorder(node_ptr& t, order_pred& P){
 			if (t != nullptr){
 				P(t);
 				preorder(t->left_, P);
@@ -65,24 +54,24 @@ namespace trees{
 			}
 		}
 
-		void inorder(std::unique_ptr<Node<T>>& t, std::function<void(std::unique_ptr<Node<T>>&)>& P){
-			if (t != nullptr){
-				P(t);
+		void inorder(node_ptr& t, order_pred& P){
+			if (t != nullptr){				
 				inorder(t->left_, P);
+				P(t);
 				inorder(t->right_, P);
 			}
 		}
 
-		void postorder(std::unique_ptr<Node<T>>& t, std::function<void(std::unique_ptr<Node<T>>&)>& P){
+		void postorder(node_ptr& t, order_pred& P){
 			if (t != nullptr){
-				P(t);
 				postorder(t->left_, P);
 				postorder(t->right_, P);
+				P(t);
 			}
 		}
 
 	protected:
-		std::unique_ptr<Node<T>> head_;
+		node_ptr head_;
 	};
 }
 
