@@ -9,7 +9,7 @@ namespace trees{
 	class binary_tree{
 	protected:
 		using node_t = N<T>;
-		using node_ptr = std::unique_ptr<node_t>;
+		using node_ptr = std::shared_ptr<node_t>;
 	public:
 		//default constructor
 		binary_tree() :head_(nullptr) {}
@@ -17,9 +17,9 @@ namespace trees{
 
 		//copy construct
 		binary_tree(const binary_tree& other){
-			std::function<void(node_ptr&, const node_ptr&)> recursive_create = [&recursive_create](node_ptr& head, const node_ptr& other_head){
+			std::function<void(node_ptr, const node_ptr)> recursive_create = [&recursive_create](node_ptr head, const node_ptr other_head){
 				if (other_head != nullptr){
-					head = std::make_unique<node_t>(std::forward<T>(*(other_head->key_)));
+					head = std::make_shared<node_t>(std::forward<T>(*(other_head->key_)));
 					if (other_head->left_ != nullptr)
 						recursive_create(head->left_, other_head->left_);
 					if (other_head->right_ != nullptr)
@@ -45,8 +45,8 @@ namespace trees{
 
 	protected:
 		//tree traversal
-		using order_pred = std::function<void(node_ptr&)>;
-		void preorder(node_ptr& t, order_pred& P){
+		using order_pred = std::function<void(node_ptr)>;
+		void preorder(node_ptr t, order_pred& P){
 			if (t != nullptr){
 				P(t);
 				preorder(t->left_, P);
@@ -54,7 +54,7 @@ namespace trees{
 			}
 		}
 
-		void inorder(node_ptr& t, order_pred& P){
+		void inorder(node_ptr t, order_pred& P){
 			if (t != nullptr){				
 				inorder(t->left_, P);
 				P(t);
@@ -62,7 +62,7 @@ namespace trees{
 			}
 		}
 
-		void postorder(node_ptr& t, order_pred& P){
+		void postorder(node_ptr t, order_pred& P){
 			if (t != nullptr){
 				postorder(t->left_, P);
 				postorder(t->right_, P);

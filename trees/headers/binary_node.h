@@ -27,8 +27,8 @@ namespace trees{
 		}
 
 		std::shared_ptr<T> key_;
-		std::unique_ptr<Node<T>> left_;
-		std::unique_ptr<Node<T>> right_;
+		std::shared_ptr<Node<T>> left_;
+		std::shared_ptr<Node<T>> right_;
 	};
 }
 

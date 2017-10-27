@@ -21,7 +21,7 @@ namespace trees{
 					auto nr = n - nl - 1;					
 					T ch;
 					(*in) >> ch;
-					temp = std::make_unique<node_t>(std::move(ch));
+					temp = std::make_shared<node_t>(std::move(ch));
 					temp->left_ = make_by_input(nl, in);
 					temp->right_ = make_by_input(nr, in);
 				}
