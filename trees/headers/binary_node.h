@@ -23,7 +23,7 @@ namespace trees{
 			std::swap(left_, other.left_);
 			std::swap(right_, other.right_);
 
-			return std::move(this);
+			return std::move(*this);
 		}
 
 		std::shared_ptr<T> key_;

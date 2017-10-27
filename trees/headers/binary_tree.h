@@ -17,22 +17,12 @@ namespace trees{
 
 		//copy construct
 		binary_tree(const binary_tree& other){
-			std::function<void(node_ptr, const node_ptr)> recursive_create = [&recursive_create](node_ptr head, const node_ptr other_head){
-				if (other_head != nullptr){
-					head = std::make_shared<node_t>(std::forward<T>(*(other_head->key_)));
-					if (other_head->left_ != nullptr)
-						recursive_create(head->left_, other_head->left_);
-					if (other_head->right_ != nullptr)
-						recursive_create(head->right_, other_head->right_);
-				}
-			};
-
-			recursive_create(head_, other.head_);
+			head_ = make_copy(other.head_);
 		}
-		binary_tree& operator=(const binary_tree&){
+		binary_tree& operator=(const binary_tree& other){
 			binary_tree temp(other);
 			std::swap(head_, temp.head_);
-			return this;
+			return *this;
 		}
 
 		//move constructor
@@ -40,13 +30,24 @@ namespace trees{
 		binary_tree&& operator=(binary_tree&& other) {
 			binary_tree temp(std::move(other));
 			std::swap(head_, temp.head_);
-			return std::move(this);
+			return std::move(*this);
 		}
 
 	protected:
+		node_ptr make_copy(const node_ptr copy_head, node_ptr node_def_val = nullptr){
+			node_ptr head = node_def_val;
+			if (copy_head != node_def_val){
+				head = std::make_shared<node_t>(std::forward<T>(*(copy_head->key_)));
+				head->left_ = make_copy(copy_head->left_);
+				head->right_ = make_copy(copy_head->right_);
+			}
+
+			return head;
+		}
+
 		//tree traversal
 		using order_pred = std::function<void(node_ptr)>;
-		void preorder(node_ptr t, order_pred& P){
+		virtual void preorder(node_ptr t, order_pred& P){
 			if (t != nullptr){
 				P(t);
 				preorder(t->left_, P);
@@ -54,7 +55,7 @@ namespace trees{
 			}
 		}
 
-		void inorder(node_ptr t, order_pred& P){
+		virtual void inorder(node_ptr t, order_pred& P){
 			if (t != nullptr){				
 				inorder(t->left_, P);
 				P(t);
@@ -62,7 +63,7 @@ namespace trees{
 			}
 		}
 
-		void postorder(node_ptr t, order_pred& P){
+		virtual void postorder(node_ptr t, order_pred& P){
 			if (t != nullptr){
 				postorder(t->left_, P);
 				postorder(t->right_, P);
