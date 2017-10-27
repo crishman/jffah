@@ -1,10 +1,11 @@
 #ifndef SEARCH_BINARY_TREE_H
 #define SEARCH_BINARY_TREE_H
 #include "ideal_balance_tree.h"
+#include "crtp_search_binary_node.h"
 #include <memory>
 
 namespace trees{
-	template <typename T, template<class> class N = Node>
+	template <typename T, template<class> class N = crtp_search_binary_node>
 	class search_binary_tree : public ideal_balance_tree<T, N>{
 	public:
 		//default constructor
@@ -27,9 +28,11 @@ namespace trees{
 			head_ = make_copy(other.head_, end_);
 		}
 		search_binary_tree& operator=(const search_binary_tree& other) {
-			search_binary_tree temp(other);
-			std::swap(head_, temp.head_);
-			std::swap(end_, temp.end_);
+			if (this != &other){
+				search_binary_tree temp(other);
+				std::swap(head_, temp.head_);
+				std::swap(end_, temp.end_);
+			}
 			return *this;
 		}
 		
@@ -38,9 +41,11 @@ namespace trees{
 			std::swap(end_, other.end_);
 		}
 		search_binary_tree&& operator=(search_binary_tree&& other) {
-			ideal_balance_tree::operator=(std::move(other));
-			end_ = nullptr;
-			std::swap(end_, other.end_);
+			if (this != &other){
+				ideal_balance_tree::operator=(std::move(other));
+				end_ = nullptr;
+				std::swap(end_, other.end_);
+			}
 			return std::move(*this);
 		}
 	protected:
