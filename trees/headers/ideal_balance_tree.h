@@ -1,14 +1,14 @@
 #ifndef IDEAL_BALANCE_TREE_H
 #define IDEAL_BALANCE_TREE_H
+#include "crtp_binary_node.h"
 #include "binary_tree.h"
-#include "binary_node.h"
 #include <functional>
 #include <memory>
 #include <iostream>
 
 namespace trees{
 
-	template <typename T, template<class> class N = Node>
+	template <typename T, template<class> class N = crtp_binary_node>
 	class ideal_balance_tree : public binary_tree<T, N>{
 	public:
 		ideal_balance_tree() :binary_tree() {}

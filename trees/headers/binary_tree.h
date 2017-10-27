@@ -2,10 +2,10 @@
 #define BINARY_TREE_H
 #include <memory>
 #include <functional>
-#include "binary_node.h"
+#include "crtp_binary_node.h"
 
 namespace trees{
-	template <typename T, template<class> class N = Node>
+	template <typename T, template<class> class N = crtp_binary_node>
 	class binary_tree{
 	protected:
 		using node_t = N<T>;
@@ -20,26 +20,31 @@ namespace trees{
 			head_ = make_copy(other.head_);
 		}
 		binary_tree& operator=(const binary_tree& other){
-			binary_tree temp(other);
-			std::swap(head_, temp.head_);
+			if (this != &other){
+				binary_tree temp(other);
+				std::swap(head_, temp.head_);
+			}
 			return *this;
 		}
 
 		//move constructor
 		binary_tree(binary_tree&& other) :head_(std::move(other.head_)) {}
 		binary_tree&& operator=(binary_tree&& other) {
-			binary_tree temp(std::move(other));
-			std::swap(head_, temp.head_);
+			if (this != &other){
+				binary_tree temp(std::move(other));
+				std::swap(head_, temp.head_);
+			}
 			return std::move(*this);
 		}
 
 	protected:
+		//copy tree
 		node_ptr make_copy(const node_ptr copy_head, node_ptr node_def_val = nullptr){
 			node_ptr head = node_def_val;
 			if (copy_head != node_def_val){
 				head = std::make_shared<node_t>(std::forward<T>(*(copy_head->key_)));
-				head->left_ = make_copy(copy_head->left_);
-				head->right_ = make_copy(copy_head->right_);
+				head->left_ = make_copy(copy_head->left_, node_def_val);
+				head->right_ = make_copy(copy_head->right_, node_def_val);
 			}
 
 			return head;
@@ -47,26 +52,26 @@ namespace trees{
 
 		//tree traversal
 		using order_pred = std::function<void(node_ptr)>;
-		virtual void preorder(node_ptr t, order_pred& P){
+		void preorder(node_ptr t, order_pred& P, node_ptr node_def_val = nullptr){
 			if (t != nullptr){
 				P(t);
-				preorder(t->left_, P);
-				preorder(t->right_, P);
+				preorder(t->left_, P, node_def_val);
+				preorder(t->right_, P, node_def_val);
 			}
 		}
 
-		virtual void inorder(node_ptr t, order_pred& P){
+		void inorder(node_ptr t, order_pred& P, node_ptr node_def_val = nullptr){
 			if (t != nullptr){				
-				inorder(t->left_, P);
+				inorder(t->left_, P, node_def_val);
 				P(t);
-				inorder(t->right_, P);
+				inorder(t->right_, P, node_def_val);
 			}
 		}
 
-		virtual void postorder(node_ptr t, order_pred& P){
+		void postorder(node_ptr t, order_pred& P, node_ptr node_def_val = nullptr){
 			if (t != nullptr){
-				postorder(t->left_, P);
-				postorder(t->right_, P);
+				postorder(t->left_, P, node_def_val);
+				postorder(t->right_, P, node_def_val);
 				P(t);
 			}
 		}

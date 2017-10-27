@@ -3,32 +3,48 @@
 #include <memory>
 
 namespace trees{
-	template<typename T>
-	struct Node{
-		Node() :left_(nullptr), right_(nullptr) {}
-		explicit Node(T&& key) :left_(nullptr), right_(nullptr) {
+	template<typename T, template <class> class U>
+	struct binary_node{
+		//default constructor
+		binary_node() 
+		:key_(nullptr)
+		,left_(nullptr)
+		,right_(nullptr)
+		{}
+		//construct with key parameter
+		explicit binary_node(T&& key)
+			:left_(nullptr)
+			,right_(nullptr) {
 			key_ = std::make_shared<T>(std::forward<T>(key));
 		}
-		virtual ~Node() = default;
+		virtual ~binary_node() = default;
 
 		//there can't be two same nodes in a binary tree
-		Node(const Node& other) = delete;
-		Node& operator=(const Node&) = delete;
+		binary_node(const binary_node& other) = delete;
+		binary_node& operator=(const binary_node&) = delete;
 
-		Node(Node&& other) :key_(nullptr), left_(std::move(left_)), right_(std::move(right_)){
+		binary_node(binary_node&& other)
+			:key_(nullptr)
+			, left_(std::move(left_))
+			, right_(std::move(right_)){
 			std::swap(key_, other.key_);
 		}
-		Node&& operator=(Node&& other){
-			std::swap(key_, other.key_);
-			std::swap(left_, other.left_);
-			std::swap(right_, other.right_);
+		binary_node&& operator=(binary_node&& other){
+			if (this != &other){
+				std::swap(key_, other.key_);
+				std::swap(left_, other.left_);
+				std::swap(right_, other.right_);
+			}
 
 			return std::move(*this);
 		}
 
+		//key of node
 		std::shared_ptr<T> key_;
-		std::shared_ptr<Node<T>> left_;
-		std::shared_ptr<Node<T>> right_;
+		//left child node
+		std::shared_ptr<U<T>> left_;
+		//right child node
+		std::shared_ptr<U<T>> right_;
 	};
 }
 
