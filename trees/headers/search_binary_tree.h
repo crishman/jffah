@@ -3,6 +3,7 @@
 #include "ideal_balance_tree.h"
 #include "crtp_search_binary_node.h"
 #include <memory>
+#include <istream>
 
 namespace trees{
 	template <typename T, template<class> class N = crtp_search_binary_node>
@@ -12,14 +13,24 @@ namespace trees{
 		search_binary_tree() :ideal_balance_tree() {
 			//create search barrier node
 			end_ = std::make_shared<node_t>();
+			end_->key_ = std::make_shared<T>();
+			//root in empty tree points to the barrier 
 			head_ = end_;
 		}
 		//open from sequence from stream
-		search_binary_tree(const int& n, std::istream* in) {			
+		search_binary_tree(std::istream* in) {			
 			//create search barrier node
 			end_ = std::make_shared<node_t>();
+			end_->key_ = std::make_shared<T>();
+			//root in empty tree points to the barrier 
+			head_ = end_;
 			//build a search binary tree with nodes	
-			head_ = make_by_input(n, in, end_);
+			while (!in->eof()) {
+				T x;
+				(*in) >> x;
+				*(end_->key_) = x;
+				search_and_input(std::move(x), head_);
+			}
 		}
 		virtual ~search_binary_tree() = default;
 
@@ -48,6 +59,25 @@ namespace trees{
 			}
 			return std::move(*this);
 		}
+
+		void search_and_input(T&& x, node_ptr& p) {
+			if (x < *(p->key_))
+				search_and_input(std::forward<T>(x), p->left_);
+			else if (x > *(p->key_))
+				search_and_input(std::forward<T>(x), p->right_);
+			else if (p != end_)
+				++p->count_;
+			else {//вставить
+				p = std::make_shared<node_t>(std::forward<T>(x));
+				p->left_ = end_;
+				p->right_ = end_;
+			}
+		}
+
+		/*void print_tree(const int& h, std::ostream* out) {
+			PrintTree(head_, h, out, end_);
+		}*/
+
 	protected:
 		//search_barier
 		node_ptr end_;

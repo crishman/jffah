@@ -15,6 +15,21 @@ namespace trees{
 		//open from sequence from stream
 		ideal_balance_tree(const int& n, std::istream* in) : binary_tree() {
 			//build a ideal balanced tree with nodes	
+			std::function<node_ptr(const int&, std::istream*)> make_by_input = [&make_by_input](const int& n, std::istream* in){
+				node_ptr temp = nullptr;
+				if (n > 0) {
+					auto nl = n / 2;
+					auto nr = n - nl - 1;
+					T ch;
+					(*in) >> ch;
+					temp = std::make_shared<node_t>(std::move(ch));
+					temp->left_ = make_by_input(nl, in);
+					temp->right_ = make_by_input(nr, in);
+				}
+
+				return temp;
+			};
+
 			head_ = make_by_input(n, in);
 		}
 		virtual ~ideal_balance_tree() = default;
@@ -31,22 +46,7 @@ namespace trees{
 		ideal_balance_tree&& operator=(ideal_balance_tree&& other) {
 			binary_tree::operator=(std::move(other));
 			return std::move(*this);
-		}
-	protected:
-		node_ptr make_by_input(const int& n, std::istream* in, node_ptr node_def_val = nullptr){
-			node_ptr temp = node_def_val;
-			if (n > 0) {
-				auto nl = n / 2;
-				auto nr = n - nl - 1;
-				T ch;
-				(*in) >> ch;
-				temp = std::make_shared<node_t>(std::move(ch));
-				temp->left_ = make_by_input(nl, in);
-				temp->right_ = make_by_input(nr, in);
-			}
-
-			return temp;
-		}
+		}		
 	};
 }
 
