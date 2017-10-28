@@ -7,10 +7,10 @@
 
 namespace trees{
 	template <typename T, template<class> class N = crtp_search_binary_node>
-	class search_binary_tree : public ideal_balance_tree<T, N>{
+	class search_binary_tree : public binary_tree<T, N>{
 	public:
 		//default constructor
-		search_binary_tree() :ideal_balance_tree() {
+		search_binary_tree() :binary_tree() {
 			//create search barrier node
 			end_ = std::make_shared<node_t>();
 			end_->key_ = std::make_shared<T>();
@@ -48,12 +48,12 @@ namespace trees{
 		}
 		
 		//move constructor
-		search_binary_tree(search_binary_tree&& other) :ideal_balance_tree(std::move(other)), end_(nullptr) {
+		search_binary_tree(search_binary_tree&& other) :binary_tree(std::move(other)), end_(nullptr) {
 			std::swap(end_, other.end_);
 		}
 		search_binary_tree&& operator=(search_binary_tree&& other) {
 			if (this != &other){
-				ideal_balance_tree::operator=(std::move(other));
+				binary_tree::operator=(std::move(other));
 				end_ = nullptr;
 				std::swap(end_, other.end_);
 			}
@@ -74,9 +74,9 @@ namespace trees{
 			}
 		}
 
-		/*void print_tree(const int& h, std::ostream* out) {
+		virtual void print_tree(const int& h, std::ostream* out) override{
 			PrintTree(head_, h, out, end_);
-		}*/
+		}
 
 	protected:
 		//search_barier

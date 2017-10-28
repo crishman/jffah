@@ -37,7 +37,22 @@ namespace trees{
 			return std::move(*this);
 		}
 
+		virtual void print_tree(const int& h, std::ostream* out) {
+			PrintTree(head_, h, out, nullptr);
+		}
+
 	protected:
+		void PrintTree(node_ptr t, const int& h, std::ostream* out, node_ptr node_def_val = nullptr) {
+			if (t != node_def_val) {
+				PrintTree(t->left_, h + 1, out, node_def_val);
+				for (int i = 1; i <= h; ++i)
+					(*out) << '\t';
+				(*out) << *(t->key_);
+				(*out) << '\n';
+				PrintTree(t->right_, h + 1, out,  node_def_val);
+			}
+		}
+
 		//copy tree
 		node_ptr make_copy(const node_ptr copy_head, node_ptr node_def_val = nullptr){
 			node_ptr head = node_def_val;
