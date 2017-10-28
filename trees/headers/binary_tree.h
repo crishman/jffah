@@ -37,19 +37,31 @@ namespace trees{
 			return std::move(*this);
 		}
 
-		virtual void print_tree(const int& h, std::ostream* out) {
+		//output key values starting from the head_
+		virtual void print_tree(const int& h, std::ostream* out) const {
 			PrintTree(head_, h, out, nullptr);
 		}
 
 	protected:
-		void PrintTree(node_ptr t, const int& h, std::ostream* out, node_ptr node_def_val = nullptr) {
+		//p - pointer to delete node
+		//r - at first call of method it's pointer to r.left_
+		virtual void delete_node(node_ptr& r, node_ptr p) {
+			if (r->right_ != nullptr)
+				delete_node(r->right_, p);
+			else {
+				p->key_ = r->key_;
+				r = r->left_;
+			}
+		}
+	
+		void PrintTree(node_ptr t, const int& h, std::ostream* out, node_ptr node_def_val = nullptr) const {
 			if (t != node_def_val) {
-				PrintTree(t->left_, h + 1, out, node_def_val);
+				PrintTree(t->right_, h + 1, out, node_def_val);
 				for (int i = 1; i <= h; ++i)
 					(*out) << '\t';
 				(*out) << *(t->key_);
 				(*out) << '\n';
-				PrintTree(t->right_, h + 1, out,  node_def_val);
+				PrintTree(t->left_, h + 1, out,  node_def_val);
 			}
 		}
 
