@@ -1,6 +1,6 @@
 #ifndef SEARCH_BINARY_TREE_H
 #define SEARCH_BINARY_TREE_H
-#include "ideal_balance_tree.h"
+#include "binary_tree.h"
 #include "crtp_search_binary_node.h"
 #include <memory>
 #include <istream>
@@ -10,7 +10,8 @@ namespace trees{
 	class search_binary_tree : public binary_tree<T, N>{
 	public:
 		//default constructor
-		search_binary_tree() :binary_tree() {
+		search_binary_tree() 
+			: binary_tree() {
 			//create search barrier node
 			end_ = std::make_shared<node_t>();
 			end_->key_ = std::make_shared<T>();
@@ -27,9 +28,10 @@ namespace trees{
 			//build a search binary tree with nodes	
 			while (!in->eof()) {
 				T x;
-				(*in) >> x;
-				*(end_->key_) = x;
-				search_and_input(std::move(x), head_);
+				if ((*in) >> x) {
+					*(end_->key_) = x;
+					search_and_input(std::move(x), head_);
+				}
 			}
 		}
 		virtual ~search_binary_tree() = default;
@@ -48,7 +50,9 @@ namespace trees{
 		}
 		
 		//move constructor
-		search_binary_tree(search_binary_tree&& other) :binary_tree(std::move(other)), end_(nullptr) {
+		search_binary_tree(search_binary_tree&& other)
+			: binary_tree(std::move(other))
+			, end_(nullptr) {
 			std::swap(end_, other.end_);
 		}
 		search_binary_tree&& operator=(search_binary_tree&& other) {
@@ -60,14 +64,14 @@ namespace trees{
 			return std::move(*this);
 		}
 
-		void search_and_input(T&& x, node_ptr& p) {
+		virtual void search_and_input(T&& x, node_ptr& p) {
 			if (x < *(p->key_))
 				search_and_input(std::forward<T>(x), p->left_);
 			else if (x > *(p->key_))
 				search_and_input(std::forward<T>(x), p->right_);
 			else if (p != end_)
 				++p->count_;
-			else {//вставить
+			else {//input
 				p = std::make_shared<node_t>(std::forward<T>(x));
 				p->left_ = end_;
 				p->right_ = end_;
@@ -90,19 +94,19 @@ namespace trees{
 				delete_by_key(std::forward<T>(x), p->left_);
 			else if (x > *(p->key_))
 				delete_by_key(std::forward<T>(x), p->right_);
-			else {//удалить *p
+			else {//delete *p
 				if (p->right_ == end_)
 					p = p->left_;
 				else if (p->left_ == end_)
 					p = p->right_;
-				else
+				else 
 					delete_node(p->left_, p);
 			}
 		}
 
 		//p - pointer to delete node
 		//r - at first call of method it's pointer to r.left_
-		virtual void delete_node(node_ptr& r, node_ptr p) override {
+		void delete_node(node_ptr& r, node_ptr p) {
 			if (r->right_ != end_)
 				delete_node(r->right_, p);
 			else {

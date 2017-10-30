@@ -7,14 +7,14 @@ namespace trees{
 	struct binary_node{
 		//default constructor
 		binary_node() 
-		:key_(nullptr)
-		,left_(nullptr)
-		,right_(nullptr)
-		{}
+			: key_(nullptr)
+			, left_(nullptr)
+			, right_(nullptr) {
+		}
 		//construct with key parameter
 		explicit binary_node(T&& key)
-			:left_(nullptr)
-			,right_(nullptr) {
+			: left_(nullptr)
+			, right_(nullptr) {
 			key_ = std::make_shared<T>(std::forward<T>(key));
 		}
 		virtual ~binary_node() = default;
@@ -24,7 +24,7 @@ namespace trees{
 		binary_node& operator=(const binary_node&) = delete;
 
 		binary_node(binary_node&& other)
-			:key_(nullptr)
+			: key_(nullptr)
 			, left_(std::move(left_))
 			, right_(std::move(right_)){
 			std::swap(key_, other.key_);

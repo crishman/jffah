@@ -12,7 +12,9 @@ namespace trees{
 		using node_ptr = std::shared_ptr<node_t>;
 	public:
 		//default constructor
-		binary_tree() :head_(nullptr) {}
+		binary_tree() 
+			: head_(nullptr) {
+		}
 		virtual ~binary_tree() = default;
 
 		//copy construct
@@ -28,7 +30,9 @@ namespace trees{
 		}
 
 		//move constructor
-		binary_tree(binary_tree&& other) :head_(std::move(other.head_)) {}
+		binary_tree(binary_tree&& other)
+			: head_(std::move(other.head_)) {
+		}
 		binary_tree&& operator=(binary_tree&& other) {
 			if (this != &other){
 				binary_tree temp(std::move(other));
@@ -42,18 +46,7 @@ namespace trees{
 			PrintTree(head_, h, out, nullptr);
 		}
 
-	protected:
-		//p - pointer to delete node
-		//r - at first call of method it's pointer to r.left_
-		virtual void delete_node(node_ptr& r, node_ptr p) {
-			if (r->right_ != nullptr)
-				delete_node(r->right_, p);
-			else {
-				p->key_ = r->key_;
-				r = r->left_;
-			}
-		}
-	
+	protected:	
 		void PrintTree(node_ptr t, const int& h, std::ostream* out, node_ptr node_def_val = nullptr) const {
 			if (t != node_def_val) {
 				PrintTree(t->right_, h + 1, out, node_def_val);
