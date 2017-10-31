@@ -30,7 +30,7 @@ namespace trees{
 				T x;
 				if ((*in) >> x) {
 					*(end_->key_) = x;
-					search_and_input(std::move(x), head_);
+					input_by_key(std::move(x));
 				}
 			}
 		}
@@ -62,8 +62,22 @@ namespace trees{
 				std::swap(end_, other.end_);
 			}
 			return std::move(*this);
+		}		
+
+		//output key values starting from the head_
+		virtual void print_tree(const int& h, std::ostream* out) const override{
+			PrintTree(head_, h, out, end_);
 		}
 
+		void delete_by_key(T&& x) {
+			delete_node(std::forward<T>(x), head_);
+		}
+
+		void input_by_key(T&& x) {
+			search_and_input(std::forward<T>(x), head_);
+		}
+
+	protected:
 		virtual void search_and_input(T&& x, node_ptr& p) {
 			if (x < *(p->key_))
 				search_and_input(std::forward<T>(x), p->left_);
@@ -78,41 +92,31 @@ namespace trees{
 			}
 		}
 
-		//output key values starting from the head_
-		virtual void print_tree(const int& h, std::ostream* out) const override{
-			PrintTree(head_, h, out, end_);
-		}
+		virtual void delete_node(T&& x, node_ptr& p) {
+			//p - pointer to delete node
+			//r - at first call of lambda it's pointer to r.left_
+			std::function<void(node_ptr&, node_ptr)> del = [&del, this](node_ptr& r, node_ptr p) {
+				if (r->right_ != end_)
+					del(r->right_, p);
+				else {
+					p->key_ = r->key_;
+					p->count_ = r->count_;
+					r = r->left_;
+				}
+			};
 
-		void delete_by_key(T&& x) {
-			delete_by_key(std::forward<T>(x), head_);
-		}
-
-	protected:
-		void delete_by_key(T&& x, node_ptr& p) {
 			if (p == end_);
 			else if (x < *(p->key_))
-				delete_by_key(std::forward<T>(x), p->left_);
+				delete_node(std::forward<T>(x), p->left_);
 			else if (x > *(p->key_))
-				delete_by_key(std::forward<T>(x), p->right_);
+				delete_node(std::forward<T>(x), p->right_);
 			else {//delete *p
 				if (p->right_ == end_)
 					p = p->left_;
 				else if (p->left_ == end_)
 					p = p->right_;
 				else 
-					delete_node(p->left_, p);
-			}
-		}
-
-		//p - pointer to delete node
-		//r - at first call of method it's pointer to r.left_
-		void delete_node(node_ptr& r, node_ptr p) {
-			if (r->right_ != end_)
-				delete_node(r->right_, p);
-			else {
-				p->key_ = r->key_;
-				p->count_ = r->count_;
-				r = r->left_;
+					del(p->left_, p);
 			}
 		}
 

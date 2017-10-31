@@ -4,6 +4,7 @@
 #include "crtp_avl_node.h"
 #include <memory>
 #include <istream>
+#include <functional>
 
 namespace trees {
 	template <typename T, template<class> class N = crtp_avl_node>
@@ -53,6 +54,7 @@ namespace trees {
 			return std::move(*this);
 		}
 
+protected:
 		//method search_and_input with balance recovery 
 		virtual void search_and_input(T&& x, node_ptr& p) override{			
 			//!h
@@ -140,8 +142,139 @@ namespace trees {
 			} else
 				++p->count_;
 		}
-	protected:
-		//subtree height is increased(at search_and_input)
+
+		//rebalance to left subtree
+		void balanceL(node_ptr& p) {
+			//h, left side decreased
+			if (p->bal_ == node_bal::DISBALANCE)
+				p->bal_ = node_bal::IDEAL_BALANCE;
+			else if (p->bal_ == node_bal::IDEAL_BALANCE) {
+				p->bal_ = node_bal::BALANCE;
+				h_ = false;
+			} else {//case when p->bal == BALANCE, need to restore balance(..to the Force..again..and again)
+				node_ptr p1 = p->right_;
+				if (p1->bal_ == node_bal::IDEAL_BALANCE || p1->bal_ == node_bal::BALANCE) {//single RR rotation
+					p->right_ = p1->left_;
+					p1->left_ = p;
+					if (p1->bal_ == node_bal::IDEAL_BALANCE) {
+						p->bal_ = node_bal::BALANCE;
+						p1->bal_ = node_bal::DISBALANCE;
+						h_ = false;
+					}
+					else {
+						p->bal_ = node_bal::IDEAL_BALANCE;
+						p1->bal_ = node_bal::IDEAL_BALANCE;
+					}
+					p = p1;
+				}
+				else {//double RL rotation
+					node_ptr p2 = p1->left_;
+					p1->left_ = p2->right_;
+					p2->right_ = p1;
+					p->right_ = p2->left_;
+					p2->left_ = p;
+					if (p2->bal_ == node_bal::BALANCE)
+						p->bal_ = node_bal::DISBALANCE;
+					else
+						p->bal_ = node_bal::IDEAL_BALANCE;
+					if (p2->bal_ == node_bal::DISBALANCE)
+						p1->bal_ = node_bal::BALANCE;
+					else
+						p1->bal_ = node_bal::IDEAL_BALANCE;
+					p = p2;
+					p2->bal_ = node_bal::IDEAL_BALANCE;
+				}
+			}
+		}
+
+		//rebalance to right subtree
+		void balanceR(node_ptr& p) {
+			//h, right side decreased
+			if (p->bal_ == node_bal::BALANCE)
+				p->bal_ = node_bal::IDEAL_BALANCE;
+			else if (p->bal_ == node_bal::IDEAL_BALANCE) {
+				p->bal_ = node_bal::DISBALANCE;
+				h_ = false;
+			}
+			else {//case when p->bal = balance::DISBALANCE, so then we need rebalance! 
+				node_ptr p1 = p->left_;
+				if (p1->bal_ == node_bal::IDEAL_BALANCE || p1->bal_ == node_bal::DISBALANCE) {//single LL rotation
+					p->left_ = p1->right_;
+					p1->right_ = p;
+					if (p1->bal_ == node_bal::IDEAL_BALANCE) {
+						p->bal_ = node_bal::DISBALANCE;
+						p1->bal_ = node_bal::BALANCE;
+						h_ = false;
+					}
+					else {
+						p->bal_ = node_bal::IDEAL_BALANCE;
+						p1->bal_ = node_bal::IDEAL_BALANCE;
+					}
+					p = p1;
+				}
+				else {//double LR rotation
+					node_ptr p2 = p1->right_;
+					p1->right_ = p2->left_;
+					p2->left_ = p1;
+					p->left_ = p2->right_;
+					p2->right_ = p;
+					if (p2->bal_ == node_bal::DISBALANCE)
+						p->bal_ = node_bal::BALANCE;
+					else
+						p->bal_ = node_bal::IDEAL_BALANCE;
+					if (p2->bal_ == node_bal::BALANCE)
+						p1->bal_ = node_bal::DISBALANCE;
+					else
+						p1->bal_ = node_bal::IDEAL_BALANCE;
+					p = p2;
+					p2->bal_ = node_bal::IDEAL_BALANCE;
+				}				
+			}
+		}
+
+		//method delete node with balance recovery 
+		virtual void delete_node(T&& x, node_ptr& p) override {
+			std::function<void(node_ptr&, node_ptr)> del = [&del, this](node_ptr& r, node_ptr q) {
+				//!h
+				if (r->right_ != end_) {
+					del(r->right_, q);
+					if (h_) balanceR(r);
+				}
+				else {
+					q->key_ = r->key_;
+					q->count_ = r->count_;
+					q = r;
+					r = r->left_;
+					h_ = true;
+				}
+			};
+
+			//!h
+			if (p == end_);//node with such key is not in tree
+			else if (*(p->key_) > x) {
+				delete_node(std::forward<T>(x), p->left_);
+				if (h_) balanceL(p);
+			} else if (*(p->key_) < x){
+				delete_node(std::forward<T>(x), p->right_);
+				if (h_) balanceR(p);
+			} else {//delete *p
+				node_ptr q = p;
+				if (q->right_ == end_) {
+					p = q->left_;
+					h_ = true;
+				}
+				else if (q->left_ == end_) {
+					p = q->right_;
+					h_ = true;
+				}
+				else {
+					del(q->left_, q);
+					if (h_) balanceL(p);
+				}
+			}
+		}
+
+		//subtree height is increased or is decreased(at search_and_input or at delete_node)
 		bool h_;
 	};
 }
